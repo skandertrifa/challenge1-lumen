@@ -29,6 +29,9 @@ RUN a2enmod rewrite headers
 # 4. start with base php config, then add extensions
 RUN mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 
+RUN apt-get update \
+    && apt-get install -y libzip-dev
+
 RUN docker-php-ext-install \
     bz2 \
     intl \
@@ -36,17 +39,17 @@ RUN docker-php-ext-install \
     bcmath \
     opcache \
     calendar \
-    mbstring \
     pdo_mysql \
     zip
 
+
 # 5. composer
-COPY --from=composer:2.0.9 /usr/bin/composer /usr/bin/composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # 6. we need a user with the same UID/GID with host user
 # so when we execute CLI commands, all the host file's ownership remains intact
 # otherwise command from inside container will create root-owned files and directories
 ARG uid
-RUN useradd -G www-data,root -u $uid -d /home/devuser devuser
+RUN useradd -G www-data,root -u $uid -d /home/devuser devuser -p "$(openssl passwd -1 root)"
 RUN mkdir -p /home/devuser/.composer && \
     chown -R devuser:devuser /home/devuser
