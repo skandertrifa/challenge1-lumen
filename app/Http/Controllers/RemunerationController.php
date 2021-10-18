@@ -15,6 +15,18 @@ class RemunerationController extends Controller
         $salaire = $request->query('salaire');
         $first_name = $request->query('first_name');
         $last_name = $request->query('last_name');
+        $fields = $request->query('fields');
+        if ( $fields ) {
+            $data = explode(",",$fields);
+            $lastName = $data[0];
+            $firstName = $data[1];
+            $salary = $data[2];
+            $remuneration = Remuneration::query()
+                ->where('last_name',$lastName)
+                ->where('first_name',$firstName)
+                ->where('salaire',$salary)->firstOrFail();
+            return response()->json($remuneration);
+        }
         if ( $sort ){
             $remunerations = Remuneration::orderBy($sort);
         }
